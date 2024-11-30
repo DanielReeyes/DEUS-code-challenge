@@ -19,17 +19,11 @@ if __name__ == "__main__":
 
     spark = SparkSession.builder.appName("DEUS-code-challenge").getOrCreate()
 
-    products_dataframe = spark.read.csv(
-        "data/products_uuid.csv", header=True, schema=ProductSchema().schema
-    )
+    products_dataframe = spark.read.csv("data/products_uuid.csv", header=True, schema=ProductSchema().schema)
 
-    sales_dataframe = spark.read.csv(
-        "data/sales_uuid.csv", header=True, schema=SalesSchema().schema
-    )
+    sales_dataframe = spark.read.csv("data/sales_uuid.csv", header=True, schema=SalesSchema().schema)
 
-    stores_dataframe = spark.read.csv(
-        "data/stores_uuid.csv", header=True, schema=StoresSchema().schema
-    )
+    stores_dataframe = spark.read.csv("data/stores_uuid.csv", header=True, schema=StoresSchema().schema)
 
     products_dataframe.show(5)
     products_dataframe.printSchema()
@@ -48,16 +42,12 @@ if __name__ == "__main__":
     check_duplicate_data(sales_dataframe)
     check_duplicate_data(stores_dataframe)
 
-    sales_formatted = standardize_date_type_columns(
-        sales_dataframe, ["transaction_date"]
-    )
+    sales_formatted = standardize_date_type_columns(sales_dataframe, ["transaction_date"])
     sales_formatted.show(5)
     sales_formatted.printSchema()
 
     enriched_dataframe = (
-        products_dataframe.join(
-            sales_formatted, products_dataframe.product_id == sales_formatted.product_id
-        )
+        products_dataframe.join(sales_formatted, products_dataframe.product_id == sales_formatted.product_id)
         .join(stores_dataframe, sales_formatted.store_id == stores_dataframe.store_id)
         .select(
             products_dataframe.product_name,
@@ -94,15 +84,11 @@ if __name__ == "__main__":
 
     categorize_price_udf = udf(categorize_price, StringType())
 
-    enriched_dataframe = enriched_dataframe.withColumn(
-        "price_category", categorize_price_udf("price")
-    )
+    enriched_dataframe = enriched_dataframe.withColumn("price_category", categorize_price_udf("price"))
 
     enriched_dataframe.show(5)
 
-    write_report(
-        enriched_dataframe.drop("price_category"), "PARQUET", "export/enriched_dataset"
-    )
+    write_report(enriched_dataframe.drop("price_category"), "PARQUET", "export/enriched_dataset")
     write_report(total_revenue_dataframe, "CSV", "export/sales_dataset")
 
     spark.stop()

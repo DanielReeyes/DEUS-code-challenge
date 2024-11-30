@@ -55,9 +55,9 @@ def test_standardize_date_type_columns():
     df = spark.createDataFrame(input_data, input_columns)
 
     expected_data = [("1", "2022-01-01"), ("2", "2022-01-02"), ("3", "2022-01-03")]
-    expected_df = spark.createDataFrame(
-        expected_data, ["id", "date_column"]
-    ).withColumn("date_column", to_date(col("date_column")))
+    expected_df = spark.createDataFrame(expected_data, ["id", "date_column"]).withColumn(
+        "date_column", to_date(col("date_column"))
+    )
 
     result_df = standardize_date_type_columns(df, date_type_columns=["date_column"])
 

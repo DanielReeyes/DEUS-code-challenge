@@ -5,9 +5,7 @@ import logging
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, lit, to_date, when
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -30,13 +28,9 @@ def check_missing_data(dataframe_to_check: DataFrame, columns: list = None):
     if columns is None:
         columns = dataframe_to_check.columns
     else:
-        invalid_columns = [
-            column for column in columns if column not in dataframe_to_check.columns
-        ]
+        invalid_columns = [column for column in columns if column not in dataframe_to_check.columns]
         if invalid_columns:
-            raise ValueError(
-                f"The following columns are not in the DataFrame: {invalid_columns}"
-            )
+            raise ValueError(f"The following columns are not in the DataFrame: {invalid_columns}")
 
     logger.info(">>> Columns to be analyzed: %s", columns)
 
@@ -66,22 +60,15 @@ def check_duplicate_data(dataframe_to_check: DataFrame, columns: list = None):
         columns = dataframe_to_check.columns
 
     if not isinstance(dataframe_to_check, DataFrame):
-        raise ValueError(
-            "The provided 'dataframe_to_check' is not a valid PySpark DataFrame."
-        )
+        raise ValueError("The provided 'dataframe_to_check' is not a valid PySpark DataFrame.")
 
     invalid_columns = [col for col in columns if col not in dataframe_to_check.columns]
     if invalid_columns:
-        raise ValueError(
-            f"The following columns are not in the DataFrame: {invalid_columns}"
-        )
+        raise ValueError(f"The following columns are not in the DataFrame: {invalid_columns}")
 
     logger.info(">>> Columns to be analyzed: %s", columns)
 
-    if (
-        dataframe_to_check.select(columns).count()
-        > dataframe_to_check.select(columns).distinct().count()
-    ):
+    if dataframe_to_check.select(columns).count() > dataframe_to_check.select(columns).distinct().count():
         logger.info("DataFrame has duplicates entries for columns: %s", columns)
         return True
 
@@ -89,9 +76,7 @@ def check_duplicate_data(dataframe_to_check: DataFrame, columns: list = None):
     return False
 
 
-def standardize_date_type_columns(
-    dataframe_to_standardize: DataFrame, date_type_columns: list = None
-):
+def standardize_date_type_columns(dataframe_to_standardize: DataFrame, date_type_columns: list = None):
     """
     Standardizes columns with date values into a specified format.
 
@@ -165,9 +150,7 @@ def categorize_price(price: float) -> str:
     """
 
     if not isinstance(price, (int, float)):
-        raise ValueError(
-            f"Invalid type for price: {type(price)}. Expected int or float."
-        )
+        raise ValueError(f"Invalid type for price: {type(price)}. Expected int or float.")
     if price < 0:
         raise ValueError(f"Price cannot be negative: {price}")
 
@@ -182,9 +165,7 @@ def categorize_price(price: float) -> str:
 REPORT_ALLOWED_TYPES = ["CSV", "PARQUET", "JSON"]
 
 
-def write_report(
-    dataframe_to_write: DataFrame, write_type: str = "CSV", output_path: str = "export/"
-):
+def write_report(dataframe_to_write: DataFrame, write_type: str = "CSV", output_path: str = "export/"):
     """
     Writes a PySpark DataFrame to a specified file format.
 
@@ -204,9 +185,7 @@ def write_report(
     """
 
     if write_type.upper() not in REPORT_ALLOWED_TYPES:
-        raise ValueError(
-            f"Unsupported write_type '{write_type}'. Supported types are {REPORT_ALLOWED_TYPES}."
-        )
+        raise ValueError(f"Unsupported write_type '{write_type}'. Supported types are {REPORT_ALLOWED_TYPES}.")
 
     if not isinstance(dataframe_to_write, DataFrame):
         raise ValueError("Invalid DataFrame. Please provide a valid PySpark DataFrame.")
@@ -216,15 +195,11 @@ def write_report(
 
     try:
         if write_type.upper() == "CSV":
-            dataframe_to_write.write.mode("overwrite").option("header", "true").csv(
-                output_path
-            )
+            dataframe_to_write.write.mode("overwrite").option("header", "true").csv(output_path)
             logger.info("Dataset successfully saved as CSV at %s", output_path)
 
         elif write_type.upper() == "PARQUET":
-            dataframe_to_write.write.partitionBy("category", "transaction_date").mode(
-                "overwrite"
-            ).parquet(output_path)
+            dataframe_to_write.write.partitionBy("category", "transaction_date").mode("overwrite").parquet(output_path)
             logger.info("Dataset successfully saved as PARQUET at %s", output_path)
 
         elif write_type.upper() == "JSON":

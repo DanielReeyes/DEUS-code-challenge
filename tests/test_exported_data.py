@@ -19,26 +19,16 @@ def test_exported_enriched_dataset():
     """
     exported_enriched_dataframe = spark.read.parquet("../src/export/enriched_dataset/")
 
-    products_dataframe = spark.read.csv(
-        "../src/data/products_uuid.csv", header=True, schema=ProductSchema().schema
-    )
+    products_dataframe = spark.read.csv("../src/data/products_uuid.csv", header=True, schema=ProductSchema().schema)
 
-    sales_dataframe = spark.read.csv(
-        "../src/data/sales_uuid.csv", header=True, schema=SalesSchema().schema
-    )
+    sales_dataframe = spark.read.csv("../src/data/sales_uuid.csv", header=True, schema=SalesSchema().schema)
 
-    stores_dataframe = spark.read.csv(
-        "../src/data/stores_uuid.csv", header=True, schema=StoresSchema().schema
-    )
+    stores_dataframe = spark.read.csv("../src/data/stores_uuid.csv", header=True, schema=StoresSchema().schema)
 
-    sales_formatted = standardize_date_type_columns(
-        sales_dataframe, ["transaction_date"]
-    )
+    sales_formatted = standardize_date_type_columns(sales_dataframe, ["transaction_date"])
 
     enriched_dataframe = (
-        products_dataframe.join(
-            sales_formatted, products_dataframe.product_id == sales_formatted.product_id
-        )
+        products_dataframe.join(sales_formatted, products_dataframe.product_id == sales_formatted.product_id)
         .join(stores_dataframe, sales_formatted.store_id == stores_dataframe.store_id)
         .select(
             products_dataframe.product_name,
@@ -63,30 +53,18 @@ def test_exported_sales_dataset():
     """
     Test the exported sales dataset function.
     """
-    exported_sales_dataframe = spark.read.csv(
-        "../src/export/sales_dataset/", header=True
-    )
+    exported_sales_dataframe = spark.read.csv("../src/export/sales_dataset/", header=True)
 
-    products_dataframe = spark.read.csv(
-        "../src/data/products_uuid.csv", header=True, schema=ProductSchema().schema
-    )
+    products_dataframe = spark.read.csv("../src/data/products_uuid.csv", header=True, schema=ProductSchema().schema)
 
-    sales_dataframe = spark.read.csv(
-        "../src/data/sales_uuid.csv", header=True, schema=SalesSchema().schema
-    )
+    sales_dataframe = spark.read.csv("../src/data/sales_uuid.csv", header=True, schema=SalesSchema().schema)
 
-    stores_dataframe = spark.read.csv(
-        "../src/data/stores_uuid.csv", header=True, schema=StoresSchema().schema
-    )
+    stores_dataframe = spark.read.csv("../src/data/stores_uuid.csv", header=True, schema=StoresSchema().schema)
 
-    sales_formatted = standardize_date_type_columns(
-        sales_dataframe, ["transaction_date"]
-    )
+    sales_formatted = standardize_date_type_columns(sales_dataframe, ["transaction_date"])
 
     enriched_dataframe = (
-        products_dataframe.join(
-            sales_formatted, products_dataframe.product_id == sales_formatted.product_id
-        )
+        products_dataframe.join(sales_formatted, products_dataframe.product_id == sales_formatted.product_id)
         .join(stores_dataframe, sales_formatted.store_id == stores_dataframe.store_id)
         .select(
             products_dataframe.product_name,
