@@ -1,0 +1,37 @@
+name: Lint and Format
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install flake8 black isort pylint
+
+      - name: Run Black (Formatter)
+        run: black --check .
+
+      - name: Run isort (Import Sorting)
+        run: isort --check-only .
+
+      - name: Run Flake8 (PEP 8 Compliance)
+        run: flake8 .
+
+      - name: Run Pylint (Static Analysis)
+        run: pylint src/
