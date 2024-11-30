@@ -6,6 +6,18 @@ __pycache__/
 # C extensions
 *.so
 
+# orc files
+*.orc
+.part*
+part-*
+*.crc
+_SUCCESS*
+
+# IntelliJ IDEA / PyCharm settings
+.idea/
+*.iml
+
+
 # Distribution / packaging
 .Python
 build/
