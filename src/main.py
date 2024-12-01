@@ -25,15 +25,6 @@ if __name__ == "__main__":
 
     stores_dataframe = spark.read.csv("data/stores_uuid.csv", header=True, schema=StoresSchema().schema)
 
-    products_dataframe.show(5)
-    products_dataframe.printSchema()
-
-    sales_dataframe.show(5)
-    sales_dataframe.printSchema()
-
-    stores_dataframe.show(5)
-    stores_dataframe.printSchema()
-
     check_missing_data(products_dataframe)
     check_missing_data(sales_dataframe)
     check_missing_data(stores_dataframe)
@@ -43,8 +34,6 @@ if __name__ == "__main__":
     check_duplicate_data(stores_dataframe)
 
     sales_formatted = standardize_date_type_columns(sales_dataframe, ["transaction_date"])
-    sales_formatted.show(5)
-    sales_formatted.printSchema()
 
     enriched_dataframe = (
         products_dataframe.join(sales_formatted, products_dataframe.product_id == sales_formatted.product_id)
@@ -60,17 +49,12 @@ if __name__ == "__main__":
         )
     )
 
-    enriched_dataframe.show(5)
-
     total_revenue_dataframe = (
         enriched_dataframe.withColumn("total_revenue", col("quantity") * col("price"))
         .groupBy("store_id", "category")
         .agg(spark_sum("total_revenue").alias("total_revenue"))
         .withColumn("total_revenue", format_number("total_revenue", 2))
     )
-
-    total_revenue_dataframe.show(5)
-    total_revenue_dataframe.printSchema()
 
     monthly_sales_dataframe = (
         enriched_dataframe.withColumn("year", year(col("transaction_date")))
@@ -80,14 +64,11 @@ if __name__ == "__main__":
         .orderBy("year", "month", "category")
     )
 
-    monthly_sales_dataframe.show(5)
-
     categorize_price_udf = udf(categorize_price, StringType())
 
     enriched_dataframe = enriched_dataframe.withColumn("price_category", categorize_price_udf("price"))
 
-    enriched_dataframe.show(5)
-
+    write_report(enriched_dataframe, "CSV", "export/aditional_enriched_dataset")
     write_report(enriched_dataframe.drop("price_category"), "PARQUET", "export/enriched_dataset")
     write_report(total_revenue_dataframe, "CSV", "export/sales_dataset")
 

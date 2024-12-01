@@ -8,6 +8,8 @@ from pyspark.sql.functions import col, lit, to_date, when
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+REPORT_ALLOWED_TYPES = ["CSV", "PARQUET", "JSON"]
+
 
 def check_missing_data(dataframe_to_check: DataFrame, columns: list = None):
     """
@@ -159,10 +161,6 @@ def categorize_price(price: float) -> str:
     if 20 <= price <= 100:
         return "Medium"
     return "High"
-
-
-# Tipos de arquivo permitidos
-REPORT_ALLOWED_TYPES = ["CSV", "PARQUET", "JSON"]
 
 
 def write_report(dataframe_to_write: DataFrame, write_type: str = "CSV", output_path: str = "export/"):
