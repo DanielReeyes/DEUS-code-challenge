@@ -6,6 +6,7 @@ from pyspark.sql.functions import sum as spark_sum
 from pyspark.sql.functions import udf, year
 from pyspark.sql.types import StringType
 
+from src.utils.config_reader import Config
 from src.utils.dataframe_helpers import (
     categorize_price,
     check_duplicate_data,
@@ -17,13 +18,21 @@ from src.utils.schemas import ProductSchema, SalesSchema, StoresSchema
 
 if __name__ == "__main__":
 
-    spark = SparkSession.builder.appName("DEUS-code-challenge").getOrCreate()
+    config = Config.load_from_yaml("configs/configs.yaml")
 
-    products_dataframe = spark.read.csv("data/products_uuid.csv", header=True, schema=ProductSchema().schema)
+    spark = SparkSession.builder.appName(config.general.app_name).getOrCreate()
 
-    sales_dataframe = spark.read.csv("data/sales_uuid.csv", header=True, schema=SalesSchema().schema)
+    products_dataframe = spark.read.csv(
+        config.files.input_data_folder + "products_uuid.csv", header=True, schema=ProductSchema().schema
+    )
 
-    stores_dataframe = spark.read.csv("data/stores_uuid.csv", header=True, schema=StoresSchema().schema)
+    sales_dataframe = spark.read.csv(
+        config.files.input_data_folder + "sales_uuid.csv", header=True, schema=SalesSchema().schema
+    )
+
+    stores_dataframe = spark.read.csv(
+        config.files.input_data_folder + "stores_uuid.csv", header=True, schema=StoresSchema().schema
+    )
 
     check_missing_data(products_dataframe)
     check_missing_data(sales_dataframe)
@@ -68,8 +77,14 @@ if __name__ == "__main__":
 
     enriched_dataframe = enriched_dataframe.withColumn("price_category", categorize_price_udf("price"))
 
-    write_report(enriched_dataframe, "CSV", "export/aditional_enriched_dataset")
-    write_report(enriched_dataframe.drop("price_category"), "PARQUET", "export/enriched_dataset")
-    write_report(total_revenue_dataframe, "CSV", "export/sales_dataset")
+    write_report(
+        enriched_dataframe, config.files.csv_type, config.files.export_data_folder + "aditional_enriched_dataset"
+    )
+    write_report(
+        enriched_dataframe.drop("price_category"),
+        config.files.parquet_type,
+        config.files.export_data_folder + "enriched_dataset",
+    )
+    write_report(total_revenue_dataframe, config.files.csv_type, config.files.export_data_folder + "sales_dataset")
 
     spark.stop()
